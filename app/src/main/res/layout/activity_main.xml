@@ -4,8 +4,7 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F5F5F5"
-    android:fitsSystemWindows="true">
+    android:background="#F5F5F5">
 
     <LinearLayout
         android:id="@+id/content_container"
@@ -14,29 +13,48 @@
         android:orientation="vertical"
         android:layout_above="@+id/nav_view_container">
 
-        <LinearLayout
+        <!-- Header: Đã chuyển sang RelativeLayout để chứa nút + -->
+        <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
             android:background="#2196F3"
             android:padding="16dp">
 
-            <TextView
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="QUẢN LÝ KỲ HỌC"
-                android:textSize="24sp"
-                android:textStyle="bold"
-                android:textColor="#FFFFFF"/>
+                android:orientation="vertical"
+                android:layout_alignParentStart="true"
+                android:layout_centerVertical="true">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Danh sách các kỳ học"
-                android:textSize="14sp"
-                android:textColor="#E3F2FD"
-                android:layout_marginTop="4dp"/>
-        </LinearLayout>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="QUẢN LÝ KỲ HỌC"
+                    android:textSize="22sp"
+                    android:textStyle="bold"
+                    android:textColor="#FFFFFF"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Danh sách các kỳ học"
+                    android:textSize="13sp"
+                    android:textColor="#E3F2FD"
+                    android:layout_marginTop="2dp"/>
+            </LinearLayout>
+
+            <ImageButton
+                android:id="@+id/fabAddKyHoc"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@android:drawable/ic_input_add"
+                android:contentDescription="Thêm kỳ học mới"
+                app:tint="#FFFFFF" />
+        </RelativeLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -56,10 +74,10 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="GPA HIỆN TẠI"
-                    android:textColor="#666666"
+                    android:text="CPA HIỆN TẠI"
                     android:textSize="12sp"
-                    android:textStyle="bold" />
+                    android:textColor="#666666"
+                    android:textStyle="bold"/>
 
                 <TextView
                     android:id="@+id/tvCpaHienTai"
@@ -143,7 +161,7 @@
                 android:id="@+id/tvSoKyHoc"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="5 kỳ"
+                android:text="0 kỳ"
                 android:textSize="12sp"
                 android:textColor="#666666"
                 android:background="@drawable/bg_so_ky_hoc"
@@ -179,20 +197,5 @@
         android:layout_alignParentBottom="true">
         <include layout="@layout/layout_bottom_nav" />
     </LinearLayout>
-
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fabAddKyHoc"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentBottom="true"
-        android:layout_marginEnd="24dp"
-        android:layout_marginBottom="84dp"
-        android:contentDescription="Thêm kỳ học mới"
-        android:src="@android:drawable/ic_input_add"
-        app:backgroundTint="#2196F3"
-        app:borderWidth="0dp"
-        app:elevation="10dp"
-        app:tint="#FFFFFF" />
 
 </RelativeLayout>

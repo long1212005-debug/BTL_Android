@@ -14,40 +14,29 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Btl_Android">
-        <activity
-            android:name=".controller.LayDiemTPWebViewActivity"
-            android:exported="false"
-            android:label="Lấy điểm thành phần" />
-        <activity
-            android:name=".controller.ThongKe"
-            android:exported="false" />
-        <activity
-            android:name=".controller.LoTrinhHocTapActivity"
-            android:exported="false"
-            android:label="Lộ trình học tập" />
-
+        
+        <!-- Màn hình cào dữ liệu tự động trở thành màn hình chính -->
         <activity
             android:name=".controller.LayDuLieuWebViewActivity"
-            android:exported="false"
-            android:label="Lấy dữ liệu từ HaUI" />
-        <activity
-            android:name=".controller.ChiTietKyHocActivity"
-            android:exported="false" />
-        <activity
-            android:name=".controller.CongCuActivity"
-            android:exported="false" />
-        <activity
-            android:name=".controller.TinhDiemCanThiActivity"
-            android:exported="false" />
-        <activity
-            android:name=".controller.MainActivity"
-            android:exported="true">
+            android:exported="true"
+            android:label="Ứng dụng của Vduc và Hthinh">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name=".controller.MainActivity"
+            android:exported="false"
+            android:label="Trang chủ" />
+            
+        <activity android:name=".controller.LayDiemTPWebViewActivity" android:exported="false" />
+        <activity android:name=".controller.ThongKe" android:exported="false" />
+        <activity android:name=".controller.LoTrinhHocTapActivity" android:exported="false" />
+        <activity android:name=".controller.ChiTietKyHocActivity" android:exported="false" />
+        <activity android:name=".controller.CongCuActivity" android:exported="false" />
+        <activity android:name=".controller.TinhDiemCanThiActivity" android:exported="false" />
     </application>
 
 </manifest>

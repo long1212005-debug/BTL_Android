@@ -18,6 +18,7 @@ public class KyHocDAO {
         this.dbHelper = new DBHelper(context);
     }
 
+    // Lấy tất cả kỳ bao gồm cả kỳ ẩn (Dùng cho tính toán CPA tổng)
     public List<KyHoc> getAllKyHoc(int sinhVienId) {
         List<KyHoc> list = new ArrayList<>();
         SQLiteDatabase db = dbHelper.getReadableDatabase();
@@ -33,9 +34,11 @@ public class KyHocDAO {
         return list;
     }
 
+    // Lấy danh sách kỳ để hiển thị lên màn hình (Ẩn kỳ kỹ thuật gom dữ liệu)
     public List<KyHoc> getDisplayKyHoc(int sinhVienId) {
         List<KyHoc> list = new ArrayList<>();
         SQLiteDatabase db = dbHelper.getReadableDatabase();
+        // SỬA LỖI: Chỉ loại bỏ đúng kỳ "Dữ liệu từ Website", cho phép hiện "Kỳ 1, Kỳ 2..."
         String query = "SELECT * FROM KyHoc WHERE sinh_vien_id = ? AND ten_ky != 'Dữ liệu từ Website' ORDER BY id DESC";
         Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(sinhVienId)});
         if (cursor.moveToFirst()) {
@@ -46,6 +49,12 @@ public class KyHocDAO {
         }
         cursor.close();
         return list;
+    }
+
+    // Xóa dữ liệu cũ trước khi cào mới
+    public void deleteDisplayKyHoc(int sinhVienId) {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        db.delete("KyHoc", "sinh_vien_id = ? AND ten_ky LIKE 'Kỳ %'", new String[]{String.valueOf(sinhVienId)});
     }
 
     public long insertKyHoc(KyHoc kyHoc) {
@@ -71,7 +80,6 @@ public class KyHocDAO {
 
     public boolean deleteKyHoc(int id) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
-        // Xóa các môn học thuộc kỳ này trước
         db.delete("MonHoc", "ky_hoc_id = ?", new String[]{String.valueOf(id)});
         return db.delete("KyHoc", "id = ?", new String[]{String.valueOf(id)}) > 0;
     }

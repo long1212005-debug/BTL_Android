@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -24,7 +25,6 @@ import com.example.btl_android.model.dao.MonHocDAO;
 import com.example.btl_android.model.dao.SinhVienDAO;
 import com.example.btl_android.model.entity.KyHoc;
 import com.example.btl_android.model.entity.SinhVien;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.List;
 import java.util.Locale;
@@ -38,7 +38,7 @@ public class MainActivity extends AppCompatActivity {
     private SinhVienDAO sinhVienDAO;
     private KyHocDAO kyHocDAO;
     private MonHocDAO monHocDAO;
-    private FloatingActionButton fabAddKyHoc;
+    private ImageButton fabAddKyHoc;
     private LinearLayout btnTrangChu, btnThongKe, btnCongCu, btnCaiDat;
 
     @Override
@@ -80,17 +80,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void refreshDisplay() {
-        SinhVien sv = sinhVienDAO.getSinhVien();
-        int svId = (sv != null) ? sv.getId() : 1;
-
-        // 1. Lấy TẤT CẢ các kỳ học để tính toán (bao gồm cả kỳ ẩn từ Web)
+        int svId = 1;
         List<KyHoc> allKyHoc = kyHocDAO.getAllKyHoc(svId);
         
         int tongTinChi = 0;
         float tongDiemTichLuy = 0;
 
         for (KyHoc kh : allKyHoc) {
-            // Chỉ tính những kỳ đã có điểm hoặc kỳ đã hoàn thành
             if (kh.getTongTinChiKy() > 0) {
                 tongTinChi += kh.getTongTinChiKy();
                 tongDiemTichLuy += (kh.getGpaKy() * kh.getTongTinChiKy());
@@ -99,11 +95,9 @@ public class MainActivity extends AppCompatActivity {
 
         float cpa = (tongTinChi > 0) ? (tongDiemTichLuy / tongTinChi) : 0;
 
-        // Hiển thị lên UI
         tvCpaHienTai.setText(String.format(Locale.getDefault(), "%.2f", cpa));
         tvTongTinChiTichLuy.setText(String.valueOf(tongTinChi));
 
-        // 2. Lấy danh sách kỳ học HIỂN THỊ (Loại bỏ kỳ Web) để đưa vào ListView
         listDisplayKyHoc = kyHocDAO.getDisplayKyHoc(svId);
         tvSoKyHoc.setText(listDisplayKyHoc.size() + " kỳ");
         
@@ -157,9 +151,8 @@ public class MainActivity extends AppCompatActivity {
                             newKy.setTongTinChiKy(Integer.parseInt(sTinChi));
                             newKy.setGpaKy(sGpa.isEmpty() ? 0 : Float.parseFloat(sGpa));
                             newKy.setTrangThai(!sGpa.isEmpty()); 
-                            
                             kyHocDAO.insertKyHoc(newKy);
-                            refreshDisplay(); // Tự động tính toán lại CPA/Tín chỉ
+                            refreshDisplay();
                         } catch (Exception e) {
                             Toast.makeText(this, "Dữ liệu không hợp lệ", Toast.LENGTH_SHORT).show();
                         }

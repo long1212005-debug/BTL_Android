@@ -1,10 +1,10 @@
 package com.example.btl_android.controller;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.webkit.JavascriptInterface;
-import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -16,7 +16,6 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 
 import com.example.btl_android.R;
 import com.example.btl_android.model.dao.KyHocDAO;
@@ -32,178 +31,279 @@ import java.util.List;
 
 public class LayDuLieuWebViewActivity extends AppCompatActivity {
 
-    private WebView wvLaydiem;
-    private Button btnLaydiem;
+    private WebView wv;
     private ProgressBar progressBar;
+    private Button btnConfirm;
     private MonHocDAO monHocDAO;
     private KyHocDAO kyHocDAO;
+
+    private final String URL_SEMESTER = "https://sv.haui.edu.vn/student/result/viewscorebysemester";
+    private final String URL_EXAM = "https://sv.haui.edu.vn/student/result/examresult";
+    private final String URL_STUDY = "https://sv.haui.edu.vn/student/result/studyresults";
+
+    private int currentStep = 0;
+    private List<KyHoc> tempSemesters = new ArrayList<>();
+    private List<MonHoc> tempMonHocs = new ArrayList<>();
+    private int totalIgnored = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_lay_dl_tu_webview);
 
-        initViews();
-        setupWebView();
-
         monHocDAO = new MonHocDAO(this);
         kyHocDAO = new KyHocDAO(this);
 
-        btnLaydiem.setOnClickListener(v -> runScrapingScript());
-    }
-
-    private void initViews() {
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            toolbar.setNavigationOnClickListener(v -> finish());
-        }
-
-        wvLaydiem = findViewById(R.id.wvLaydiem);
-        btnLaydiem = findViewById(R.id.btnLaydiem);
+        wv = findViewById(R.id.wvLaydiem);
         progressBar = findViewById(R.id.progressBar);
+        btnConfirm = findViewById(R.id.btnLaydiem);
+
+        setupWebView();
+
+        btnConfirm.setOnClickListener(v -> {
+            btnConfirm.setVisibility(View.GONE);
+            startAutoCrawling();
+        });
     }
 
     private void setupWebView() {
-        WebSettings webSettings = wvLaydiem.getSettings();
-        webSettings.setJavaScriptEnabled(true);
-        webSettings.setDomStorageEnabled(true);
-        webSettings.setAllowFileAccess(true);
-
-        wvLaydiem.setWebViewClient(new WebViewClient() {
-            @Override
-            public void onPageStarted(WebView view, String url, android.graphics.Bitmap favicon) {
-                progressBar.setVisibility(View.VISIBLE);
-            }
-
+        WebSettings ws = wv.getSettings();
+        ws.setJavaScriptEnabled(true);
+        ws.setDomStorageEnabled(true);
+        wv.addJavascriptInterface(new WebBridge(), "AndroidBridge");
+        wv.setWebViewClient(new WebViewClient() {
             @Override
             public void onPageFinished(WebView view, String url) {
                 progressBar.setVisibility(View.GONE);
+                handleAutoStep(url);
             }
         });
-
-        wvLaydiem.addJavascriptInterface(new WebDataInterface(), "AndroidBridge");
-        wvLaydiem.loadUrl("https://sv.haui.edu.vn");
+        wv.loadUrl("https://sv.haui.edu.vn");
     }
 
-    private void runScrapingScript() {
-        // Lấy TẤT CẢ các dòng, kể cả dòng chưa có điểm (diemTK10 trống)
+    private void startAutoCrawling() {
+        currentStep = 1;
+        tempSemesters.clear();
+        tempMonHocs.clear();
+        totalIgnored = 0;
+        wv.loadUrl(URL_SEMESTER);
+    }
+
+    private void handleAutoStep(String url) {
+        if (currentStep == 1 && url.contains("viewscorebysemester")) {
+            wv.postDelayed(this::scrapeSemesterData, 500);
+        } else if (currentStep == 2 && url.contains("examresult")) {
+            wv.postDelayed(this::scrapeExamData, 500);
+        } else if (currentStep == 3 && url.contains("studyresults")) {
+            wv.postDelayed(this::scrapeStudyData, 500);
+        }
+    }
+
+    private void scrapeSemesterData() {
+        String script = "javascript:(function() { " +
+                "   var rows = document.querySelectorAll('tr'); " +
+                "   var data = []; " +
+                "   rows.forEach(function(row) { " +
+                "       var cols = row.querySelectorAll('td'); " +
+                "       if (cols.length == 5 && !isNaN(parseInt(cols[0].innerText))) { " +
+                "           data.push({ " +
+                "               tenKy: 'Kỳ ' + cols[0].innerText.trim(), " +
+                "               tinChi: cols[1].innerText.trim(), " +
+                "               gpa: cols[2].innerText.trim() " +
+                "           }); " +
+                "       } " +
+                "   }); " +
+                "   AndroidBridge.saveSemesters(JSON.stringify(data)); " +
+                "})();";
+        wv.loadUrl(script);
+    }
+
+    private void scrapeExamData() {
         String script = "javascript:(function() { " +
                 "   var rows = document.querySelectorAll('tr.kTableRow, tr.kTableAltRow'); " +
                 "   var data = []; " +
                 "   rows.forEach(function(row) { " +
                 "       var cols = row.querySelectorAll('td'); " +
                 "       if (cols.length >= 14) { " +
-                "           var item = { " +
+                "           data.push({ " +
                 "               maHP: cols[1].innerText.trim(), " +
                 "               tenMon: cols[3].innerText.trim(), " +
-                "               soTinChi: cols[5].innerText.trim(), " +
-                "               diemThi: cols[7].innerText.trim(), " +
-                "               diemTK10: cols[11].innerText.trim(), " +
-                "               diemTK4: cols[12].innerText.trim(), " +
+                "               tinChi: cols[5].innerText.trim(), " +
+                "               diem4: cols[12].innerText.trim(), " +
                 "               diemChu: cols[13].innerText.trim() " +
-                "           }; " +
-                "           if (item.tenMon !== '' && !isNaN(parseFloat(item.soTinChi))) data.push(item); " +
+                "           }); " +
                 "       } " +
                 "   }); " +
-                "   AndroidBridge.sendData(JSON.stringify(data)); " +
+                "   AndroidBridge.saveExams(JSON.stringify(data)); " +
                 "})();";
-        wvLaydiem.loadUrl(script);
+        wv.loadUrl(script);
     }
 
-    public class WebDataInterface {
+    private void scrapeStudyData() {
+        String script = "javascript:(function() { " +
+                "   var rows = document.querySelectorAll('tr.kTableRow, tr.kTableAltRow'); " +
+                "   var data = []; " +
+                "   rows.forEach(function(row) { " +
+                "       var cols = row.querySelectorAll('td'); " +
+                "       if (cols.length >= 7) { " +
+                "           data.push({ " +
+                "               tenMon: cols[1].innerText.trim(), " +
+                "               tx1: cols[4].innerText.replace(/\\u00a0/g, '').trim(), " +
+                "               tx2: cols[5].innerText.replace(/\\u00a0/g, '').trim(), " +
+                "               tx3: cols[6].innerText.replace(/\\u00a0/g, '').trim() " +
+                "           }); " +
+                "       } " +
+                "   }); " +
+                "   AndroidBridge.saveStudy(JSON.stringify(data)); " +
+                "})();";
+        wv.loadUrl(script);
+    }
+
+    public class WebBridge {
         @JavascriptInterface
-        public void sendData(String jsonData) {
+        public void saveSemesters(String json) {
             try {
-                JSONArray jsonArray = new JSONArray(jsonData);
-                List<MonHoc> monHocList = new ArrayList<>();
-                StringBuilder dataToShow = new StringBuilder();
+                JSONArray arr = new JSONArray(json);
+                for (int i = 0; i < arr.length(); i++) {
+                    JSONObject o = arr.getJSONObject(i);
+                    KyHoc kh = new KyHoc();
+                    kh.setTenKy(o.getString("tenKy"));
+                    kh.setTongTinChiKy((int)Float.parseFloat(o.getString("tinChi")));
+                    kh.setGpaKy(parseF(o.getString("gpa")));
+                    tempSemesters.add(kh);
+                }
+                currentStep = 2;
+                runOnUiThread(() -> wv.loadUrl(URL_EXAM));
+            } catch (Exception e) { Log.e("ERR", e.getMessage()); }
+        }
 
-                for (int i = 0; i < jsonArray.length(); i++) {
-                    JSONObject obj = jsonArray.getJSONObject(i);
-                    String maHP = obj.getString("maHP");
-                    String tenMon = obj.getString("tenMon");
-
-                    if (isIgnoredSubject(maHP, tenMon)) continue;
-
+        @JavascriptInterface
+        public void saveExams(String json) {
+            try {
+                JSONArray arr = new JSONArray(json);
+                for (int i = 0; i < arr.length(); i++) {
+                    JSONObject o = arr.getJSONObject(i);
+                    if (isIgnored(o.getString("maHP"), o.getString("tenMon"))) {
+                        totalIgnored++;
+                        continue;
+                    }
                     MonHoc mh = new MonHoc();
-                    mh.setTenMon(tenMon);
-                    mh.setSoTinChi((int) parseSafeFloat(obj.getString("soTinChi")));
-                    mh.setDiemThi(parseSafeFloat(obj.getString("diemThi")));
-                    mh.setDiemTongKet10(parseSafeFloat(obj.getString("diemTK10")));
-                    mh.setDiemTongKet4(parseSafeFloat(obj.getString("diemTK4")));
-                    mh.setDiemChu(obj.getString("diemChu"));
+                    mh.setTenMon(o.getString("tenMon"));
+                    mh.setSoTinChi((int)Float.parseFloat(o.getString("tinChi")));
+                    mh.setDiemTongKet4(parseF(o.getString("diem4")));
+                    mh.setDiemChu(o.getString("diemChu"));
+                    mh.setTrangThai(mh.getDiemChu().isEmpty() ? "Đang học" : "Đã qua");
+                    tempMonHocs.add(mh);
+                }
+                currentStep = 3;
+                runOnUiThread(() -> wv.loadUrl(URL_STUDY));
+            } catch (Exception e) { Log.e("ERR", e.getMessage()); }
+        }
 
-                    monHocList.add(mh);
-
-                    boolean daThi = mh.getDiemTongKet10() > 0;
-
-                    mh.setTrangThai(daThi ? "Đã thi" : "Đang học");
-
-                    dataToShow.append("- ")
-                            .append(mh.getTenMon())
-                            .append(daThi ? "" : " (Chưa thi)")
-                            .append("\n");                }
-
-                runOnUiThread(() -> showConfirmationDialog(monHocList, dataToShow.toString()));
-            } catch (Exception e) {
-                Log.e("SCRAPING_ERROR", "Lỗi: " + e.getMessage());
-            }
+        @JavascriptInterface
+        public void saveStudy(String json) {
+            try {
+                JSONArray arr = new JSONArray(json);
+                for (int i = 0; i < arr.length(); i++) {
+                    JSONObject o = arr.getJSONObject(i);
+                    for (MonHoc mh : tempMonHocs) {
+                        if (mh.getTenMon().equalsIgnoreCase(o.getString("tenMon"))) {
+                            mh.setDiemTx1(parseF(o.getString("tx1")));
+                            mh.setDiemTx2(parseF(o.getString("tx2")));
+                            String tx3Val = o.getString("tx3");
+                            mh.setDiemTx3(tx3Val.isEmpty() ? null : parseF(tx3Val));
+                            break;
+                        }
+                    }
+                }
+                runOnUiThread(() -> showFinalSummaryDialog());
+            } catch (Exception e) { Log.e("ERR", e.getMessage()); }
         }
     }
 
-    private boolean isIgnoredSubject(String maHP, String tenMon) {
-        String code = maHP.toUpperCase();
-        String name = tenMon.toLowerCase();
-        // Lọc theo mã học phần (DC: Quốc phòng, PE: Thể chất)
-        if (code.startsWith("DC") || code.startsWith("PE")) return true;
-        // Lọc Tiếng Anh cơ bản
-        if (name.contains("tiếng anh") && name.contains("cơ bản")) return true;
-        // Lọc môn Kỹ năng sử dụng công nghệ thông tin
-        if (name.contains("kỹ năng sử dụng công nghệ thông tin")) return true;
+    private void showFinalSummaryDialog() {
+        int totalTC = 0;
+        int completedMon = 0;
+        int inProgressMon = 0;
+        StringBuilder sb = new StringBuilder();
         
-        return false;
-    }
+        sb.append("📊 TỔNG KẾT DỮ LIỆU CÀO ĐƯỢC:\n\n");
+        sb.append("📅 Số học kỳ: ").append(tempSemesters.size()).append("\n");
+        
+        for (MonHoc mh : tempMonHocs) {
+            totalTC += mh.getSoTinChi();
+            if ("Đã qua".equals(mh.getTrangThai())) completedMon++;
+            else inProgressMon++;
+        }
 
-    private void showConfirmationDialog(List<MonHoc> monHocList, String data) {
-        ScrollView scrollView = new ScrollView(this);
-        TextView textView = new TextView(this);
-        textView.setText(data);
-        textView.setPadding(40, 20, 40, 20);
-        scrollView.addView(textView);
+        sb.append("📚 Tổng số môn tính tích lũy: ").append(tempMonHocs.size()).append("\n");
+        sb.append("✅ Môn đã hoàn thành: ").append(completedMon).append("\n");
+        sb.append("⏳ Môn đang học/chưa thi: ").append(inProgressMon).append("\n");
+        sb.append("🎖️ Tổng tín chỉ tích lũy: ").append(totalTC).append("\n");
+        sb.append("🚫 Đã loại bỏ: ").append(totalIgnored).append(" môn (Thể chất/Quân sự/TA cơ bản)\n\n");
+        
+        sb.append("📝 DANH SÁCH CHI TIẾT:\n");
+        for (MonHoc mh : tempMonHocs) {
+            sb.append("- ").append(mh.getTenMon())
+              .append(" (").append(mh.getSoTinChi()).append(" TC) -> ")
+              .append(mh.getDiemChu().isEmpty() ? "Chưa có điểm" : mh.getDiemChu())
+              .append("\n");
+        }
+
+        ScrollView scroll = new ScrollView(this);
+        TextView tv = new TextView(this);
+        tv.setText(sb.toString());
+        tv.setPadding(40, 40, 40, 40);
+        tv.setTextColor(getResources().getColor(android.R.color.black));
+        tv.setTextSize(14);
+        scroll.addView(tv);
 
         new AlertDialog.Builder(this)
-                .setTitle("Danh sách môn học")
-                .setView(scrollView)
-                .setPositiveButton("Lưu vào CSDL", (dialog, which) -> saveDataToDatabase(monHocList))
-                .setNegativeButton("Hủy", null)
+                .setTitle("Xác nhận dữ liệu HaUI")
+                .setView(scroll)
+                .setCancelable(false)
+                .setPositiveButton("LƯU VÀO MÁY", (dialog, which) -> commitDataToDatabase())
+                .setNegativeButton("HỦY", (dialog, which) -> {
+                    btnConfirm.setVisibility(View.VISIBLE);
+                    Toast.makeText(this, "Đã hủy thao tác", Toast.LENGTH_SHORT).show();
+                })
                 .show();
     }
 
-    private void saveDataToDatabase(List<MonHoc> monHocList) {
-        int targetKyHocId = getOrCreateWebKyHoc();
-        monHocDAO.deleteMonHocByKyHocId(targetKyHocId);
-        for (MonHoc mh : monHocList) {
-            mh.setKyHocId(targetKyHocId);
+    private void commitDataToDatabase() {
+        kyHocDAO.deleteDisplayKyHoc(1);
+        for (KyHoc kh : tempSemesters) {
+            kh.setSinhVienId(1);
+            kh.setTrangThai(true);
+            kyHocDAO.insertKyHoc(kh);
+        }
+
+        int targetId = getOrCreateWebKyHoc();
+        monHocDAO.deleteMonHocByKyHocId(targetId);
+        for (MonHoc mh : tempMonHocs) {
+            mh.setKyHocId(targetId);
             monHocDAO.insertMonHoc(mh);
         }
+        
         monHocDAO.syncGlobalStats();
+        Toast.makeText(this, "Đồng bộ hoàn tất!", Toast.LENGTH_SHORT).show();
+        startActivity(new Intent(this, MainActivity.class));
         finish();
     }
 
-    private float parseSafeFloat(String val) {
-        if (val == null || val.trim().isEmpty() || val.equals("-")) return 0.0f;
-        try { return Float.parseFloat(val.replace(",", ".")); } catch (Exception e) { return 0.0f; }
+    private boolean isIgnored(String code, String name) {
+        String c = code.toUpperCase(); String n = name.toLowerCase();
+        return c.startsWith("DC") || c.startsWith("PE") || (n.contains("tiếng anh") && n.contains("cơ bản")) || n.contains("kỹ năng sử dụng công nghệ thông tin");
+    }
+
+    private float parseF(String v) {
+        try { return Float.parseFloat(v.replace(",", ".")); } catch (Exception e) { return 0.0f; }
     }
 
     private int getOrCreateWebKyHoc() {
         List<KyHoc> list = kyHocDAO.getAllKyHoc(1);
         for (KyHoc kh : list) if (kh.getTenKy().equals("Dữ liệu từ Website")) return kh.getId();
-        KyHoc newKy = new KyHoc();
-        newKy.setSinhVienId(1);
-        newKy.setTenKy("Dữ liệu từ Website");
-        newKy.setTrangThai(true);
+        KyHoc newKy = new KyHoc(); newKy.setSinhVienId(1); newKy.setTenKy("Dữ liệu từ Website"); newKy.setTrangThai(true);
         return (int) kyHocDAO.insertKyHoc(newKy);
     }
 }

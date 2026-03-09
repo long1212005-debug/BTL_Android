@@ -1,21 +1,16 @@
-# Add project specific ProGuard rules here.
-# You can control the set of applied configuration files using the
-# proguardFiles setting in build.gradle.
-#
-# For more details, see
-#   http://developer.android.com/guide/developing/tools/proguard.html
+# 1. Bảo vệ các hàm JavascriptInterface (Cực kỳ quan trọng cho tính năng cào dữ liệu)
+-keepattributes JavascriptInterface
+-keepattributes *Annotation*
+-keepclassmembers class * {
+    @android.webkit.JavascriptInterface <methods>;
+}
 
-# If your project uses WebView with JS, uncomment the following
-# and specify the fully qualified class name to the JavaScript interface
-# class:
-#-keepclassmembers class fqcn.of.javascript.interface.for.webview {
-#   public *;
-#}
+# 2. Bảo vệ các lớp Model/Entity để không bị đổi tên (Giúp SQLite và JSON hoạt động đúng)
+-keep class com.example.btl_android.model.entity.** { *; }
 
-# Uncomment this to preserve the line number information for
-# debugging stack traces.
-#-keepattributes SourceFile,LineNumberTable
+# 3. Cấu hình cho thư viện biểu đồ MPAndroidChart
+-keep class com.github.mikephil.charting.** { *; }
+-dontwarn com.github.mikephil.charting.**
 
-# If you keep the line number information, uncomment this to
-# hide the original source file name.
-#-renamesourcefileattribute SourceFile
+# 4. Giữ lại các lớp DAO
+-keep class com.example.btl_android.model.dao.** { *; }

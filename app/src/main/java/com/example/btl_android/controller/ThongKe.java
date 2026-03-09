@@ -4,7 +4,11 @@ import android.os.Bundle;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
+import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 
 import com.example.btl_android.R;
 import com.example.btl_android.model.dao.KyHocDAO;
@@ -40,7 +44,14 @@ public class ThongKe extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        EdgeToEdge.enable(this);
         setContentView(R.layout.activity_thong_ke);
+
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
+            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+            return insets;
+        });
 
         kyHocDAO = new KyHocDAO(this);
         sinhVienDAO = new SinhVienDAO(this);
@@ -66,7 +77,7 @@ public class ThongKe extends AppCompatActivity {
         // 1. Thống kê phân bố điểm chữ (A, B, C...)
         drawGradeDistributionChart();
 
-        // 2. Thống kê tín chỉ theo kỳ
+        // 2. Thống kê tín chỉ theo kỳ (Đã lọc bỏ kỳ Website)
         drawTinChiBySemesterChart(sv.getId());
     }
 
@@ -95,7 +106,6 @@ public class ThongKe extends AppCompatActivity {
         dataSet.setColors(ColorTemplate.COLORFUL_COLORS);
         dataSet.setValueTextSize(12f);
         
-        // ÉP KIỂU SỐ NGUYÊN cho giá trị hiển thị trên cột
         dataSet.setValueFormatter(new ValueFormatter() {
             @Override
             public String getFormattedValue(float value) {
@@ -106,14 +116,12 @@ public class ThongKe extends AppCompatActivity {
         BarData data = new BarData(dataSet);
         barChartGrades.setData(data);
 
-        // Định dạng trục X
         XAxis xAxis = barChartGrades.getXAxis();
         xAxis.setValueFormatter(new IndexAxisValueFormatter(grades));
         xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
         xAxis.setGranularity(1f);
         xAxis.setDrawGridLines(false);
 
-        // ÉP KIỂU SỐ NGUYÊN cho trục Y (bên trái)
         YAxis leftAxis = barChartGrades.getAxisLeft();
         leftAxis.setGranularity(1f);
         leftAxis.setValueFormatter(new ValueFormatter() {
@@ -124,7 +132,6 @@ public class ThongKe extends AppCompatActivity {
         });
 
         barChartGrades.getAxisRight().setEnabled(false);
-        
         barChartGrades.getDescription().setEnabled(false);
         barChartGrades.getLegend().setEnabled(false);
         barChartGrades.animateY(1000);
@@ -132,11 +139,13 @@ public class ThongKe extends AppCompatActivity {
     }
 
     private void drawTinChiBySemesterChart(int sinhVienId) {
-        List<KyHoc> listAll = kyHocDAO.getAllKyHoc(sinhVienId);
+        // Lấy danh sách kỳ hiển thị (đã lọc kỳ Website trong DAO)
+        List<KyHoc> listAll = kyHocDAO.getDisplayKyHoc(sinhVienId);
         List<BarEntry> entries = new ArrayList<>();
         List<String> labels = new ArrayList<>();
 
         int index = 0;
+        // Vẽ từ cũ nhất đến mới nhất
         for (int i = listAll.size() - 1; i >= 0; i--) {
             KyHoc kh = listAll.get(i);
             entries.add(new BarEntry(index, kh.getTongTinChiKy()));
@@ -144,11 +153,10 @@ public class ThongKe extends AppCompatActivity {
             index++;
         }
 
-        BarDataSet dataSet = new BarDataSet(entries, "Tín chỉ");
+        BarDataSet dataSet = new BarDataSet(entries, "Tín chỉ hoàn thành");
         dataSet.setColors(ColorTemplate.MATERIAL_COLORS);
         dataSet.setValueTextSize(12f);
         
-        // ÉP KIỂU SỐ NGUYÊN cho số tín chỉ
         dataSet.setValueFormatter(new ValueFormatter() {
             @Override
             public String getFormattedValue(float value) {

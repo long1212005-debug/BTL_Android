@@ -103,19 +103,20 @@ public class MonHocDAO {
     }
 
     /**
-     * Đồng bộ CPA và Tín chỉ tích lũy (Chuẩn HaUI)
+     * Đồng bộ CPA và Tín chỉ tích lũy theo quy tắc:
+     * - Nếu có nhiều lần học (trùng tên môn), chỉ lấy điểm hệ 4 CAO NHẤT.
+     * - Môn điểm F (0.0) chưa học lại sẽ tính là 0.
      */
     public void syncGlobalStats() {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         
-        // Công thức chuẩn: Chỉ lấy điểm CAO NHẤT của mỗi môn (xử lý học cải thiện)
-        String query = "SELECT SUM(max_diem4 * so_tin_chi), SUM(so_tin_chi) FROM (" +
-                       "SELECT MAX(diem_tong_ket_4) as max_diem4, so_tin_chi " +
-                       "FROM MonHoc " +
-                       "WHERE diem_chu != '' AND diem_chu IS NOT NULL " +
-                       "GROUP BY ten_mon)";
+        // Truy vấn con: Nhóm theo tên môn và lấy MAX điểm hệ 4
+        String subQuery = "SELECT ten_mon, MAX(diem_tong_ket_4) as max_diem4, MAX(so_tin_chi) as tin_chi " +
+                          "FROM MonHoc " +
+                          "WHERE diem_chu IS NOT NULL AND diem_chu != '' " +
+                          "GROUP BY ten_mon";
                        
-        Cursor cursor = db.rawQuery(query, null);
+        Cursor cursor = db.rawQuery("SELECT SUM(max_diem4 * tin_chi), SUM(tin_chi) FROM (" + subQuery + ")", null);
         
         float tongDiemTichLuy = 0;
         int tongTinChi = 0;
@@ -133,6 +134,5 @@ public class MonHocDAO {
         values.put("tong_tin_chi_tich_luy", tongTinChi);
         
         db.update("SinhVien", values, "id = 1", null);
-        Log.d("SYNC_STATS", "CPA: " + cpa + " - Tổng tín: " + tongTinChi);
     }
 }

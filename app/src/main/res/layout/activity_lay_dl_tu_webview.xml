@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#F5F5F5"
@@ -12,11 +12,11 @@
         android:layout_width="0dp"
         android:layout_height="?attr/actionBarSize"
         android:background="#2196F3"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
+        app:title="Đăng nhập hệ thống HaUI"
+        app:titleTextColor="#FFFFFF"
         app:layout_constraintTop_toTopOf="parent"
-        app:title="Lấy dữ liệu"
-        app:titleTextColor="#FFFFFF" />
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent" />
 
     <ProgressBar
         android:id="@+id/progressBar"
@@ -53,18 +53,19 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:text="Sau khi đăng nhập xong, hãy nhấn nút dưới đây"
+            android:textSize="13sp"
+            android:textColor="#616161"
             android:layout_gravity="center"
-            android:layout_marginBottom="8dp"
-            android:text="Lưu ý: Đăng nhập và mở tab 'Kết quả thi' trước khi bấm"
-            android:textColor="#666666"
-            android:textSize="12sp" />
+            android:layout_marginBottom="8dp"/>
 
         <Button
             android:id="@+id/btnLaydiem"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Bắt đầu lấy dữ liệu"
-            android:backgroundTint="#2196F3"
+            android:layout_height="56dp"
+            android:text="XÁC NHẬN ĐÃ ĐĂNG NHẬP"
+            android:backgroundTint="#4CAF50"
+            android:textStyle="bold"
             android:textColor="#FFFFFF" />
     </LinearLayout>
 
