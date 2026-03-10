@@ -2,9 +2,7 @@ package com.example.btl_android.controller;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -12,7 +10,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -38,7 +35,7 @@ public class MainActivity extends AppCompatActivity {
     private SinhVienDAO sinhVienDAO;
     private KyHocDAO kyHocDAO;
     private MonHocDAO monHocDAO;
-    private ImageButton fabAddKyHoc;
+    private ImageButton btnReSyncData; // Nút làm mới dữ liệu
     private LinearLayout btnTrangChu, btnThongKe, btnCongCu, btnCaiDat;
 
     @Override
@@ -64,7 +61,7 @@ public class MainActivity extends AppCompatActivity {
         tvCpaHienTai = findViewById(R.id.tvCpaHienTai);
         tvTongTinChiTichLuy = findViewById(R.id.tvTongTinChiTichLuy);
         tvSoKyHoc = findViewById(R.id.tvSoKyHoc);
-        fabAddKyHoc = findViewById(R.id.fabAddKyHoc);
+        btnReSyncData = findViewById(R.id.btnReSyncData);
         
         btnTrangChu = findViewById(R.id.btnTrangChu);
         btnThongKe = findViewById(R.id.btnThongKe);
@@ -121,45 +118,21 @@ public class MainActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
-        fabAddKyHoc.setOnClickListener(v -> showAddKyHocDialog());
+        // Nút lấy lại dữ liệu từ web
+        btnReSyncData.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, LayDuLieuWebViewActivity.class);
+            startActivity(intent);
+        });
 
         btnTrangChu.setOnClickListener(v -> refreshDisplay());
         btnThongKe.setOnClickListener(v -> startActivity(new Intent(this, ThongKe.class)));
         btnCongCu.setOnClickListener(v -> startActivity(new Intent(this, CongCuActivity.class)));
-        btnCaiDat.setOnClickListener(v -> Toast.makeText(this, "Tính năng cài đặt", Toast.LENGTH_SHORT).show());
-    }
-
-    private void showAddKyHocDialog() {
-        View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_add_ky_hoc, null);
-        EditText edtTenKy = dialogView.findViewById(R.id.edtTenKy);
-        EditText edtTinChi = dialogView.findViewById(R.id.edtTinChiKy);
-        EditText edtGpa = dialogView.findViewById(R.id.edtGpaKy);
-
-        new AlertDialog.Builder(this)
-                .setTitle("Thêm kỳ học mới")
-                .setView(dialogView)
-                .setPositiveButton("Thêm", (dialog, which) -> {
-                    String tenKy = edtTenKy.getText().toString().trim();
-                    String sTinChi = edtTinChi.getText().toString().trim();
-                    String sGpa = edtGpa.getText().toString().trim();
-
-                    if (!tenKy.isEmpty() && !sTinChi.isEmpty()) {
-                        try {
-                            KyHoc newKy = new KyHoc();
-                            newKy.setSinhVienId(1);
-                            newKy.setTenKy(tenKy);
-                            newKy.setTongTinChiKy(Integer.parseInt(sTinChi));
-                            newKy.setGpaKy(sGpa.isEmpty() ? 0 : Float.parseFloat(sGpa));
-                            newKy.setTrangThai(!sGpa.isEmpty()); 
-                            kyHocDAO.insertKyHoc(newKy);
-                            refreshDisplay();
-                        } catch (Exception e) {
-                            Toast.makeText(this, "Dữ liệu không hợp lệ", Toast.LENGTH_SHORT).show();
-                        }
-                    }
-                })
-                .setNegativeButton("Hủy", null)
-                .show();
+        
+        // CHUYỂN MÀN HÌNH LIÊN HỆ: Đã sửa từ Toast sang startActivity
+        btnCaiDat.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, CaiDatActivity.class);
+            startActivity(intent);
+        });
     }
 
     @Override

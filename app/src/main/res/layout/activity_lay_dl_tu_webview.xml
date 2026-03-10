@@ -53,8 +53,8 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Sau khi đăng nhập xong, hãy nhấn nút dưới đây"
-            android:textSize="13sp"
+            android:text="Sau khi đăng nhập xong trên Web, hãy nhấn nút dưới đây"
+            android:textSize="12sp"
             android:textColor="#616161"
             android:layout_gravity="center"
             android:layout_marginBottom="8dp"/>

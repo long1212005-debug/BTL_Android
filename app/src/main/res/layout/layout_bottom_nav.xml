@@ -1,39 +1,37 @@
-<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/bottom_navigation_container"
     android:layout_width="match_parent"
     android:layout_height="60dp"
     android:orientation="horizontal"
     android:background="#FFFFFF"
     android:elevation="8dp"
-    android:gravity="center"
-    android:baselineAligned="false"> <LinearLayout
-    android:id="@+id/btnTrangChu"
-    android:layout_width="0dp"
-    android:layout_height="match_parent"
-    android:layout_weight="1"
-    android:orientation="vertical"
-    android:gravity="center"
-    android:clickable="true"
-    android:focusable="true"
-    android:background="?attr/selectableItemBackgroundBorderless">
-    <ImageView
-        android:id="@+id/imgTrangChu"
-        android:layout_width="24dp"
-        android:layout_height="24dp"
-        android:src="@android:drawable/ic_menu_view"
-        app:tint="#666666"/>
-    <TextView
-        android:id="@+id/tvTrangChu"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Trang chủ"
-        android:textSize="11sp"
-        android:textColor="#666666"
-        android:layout_marginTop="4dp"/>
-</LinearLayout>
+    android:gravity="center">
 
+    <!-- Trang chủ -->
+    <LinearLayout
+        android:id="@+id/btnTrangChu"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:background="?attr/selectableItemBackgroundBorderless">
+        <ImageView
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@android:drawable/ic_menu_view"
+            app:tint="#2196F3"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Trang chủ"
+            android:textSize="11sp"
+            android:textColor="#2196F3"
+            android:layout_marginTop="4dp"
+            android:textStyle="bold"/>
+    </LinearLayout>
+
+    <!-- Thống kê -->
     <LinearLayout
         android:id="@+id/btnThongKe"
         android:layout_width="0dp"
@@ -41,17 +39,13 @@
         android:layout_weight="1"
         android:orientation="vertical"
         android:gravity="center"
-        android:clickable="true"
-        android:focusable="true"
         android:background="?attr/selectableItemBackgroundBorderless">
         <ImageView
-            android:id="@+id/imgThongKe"
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:src="@android:drawable/ic_menu_agenda"
             app:tint="#666666"/>
         <TextView
-            android:id="@+id/tvThongKe"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Thống kê"
@@ -60,6 +54,7 @@
             android:layout_marginTop="4dp"/>
     </LinearLayout>
 
+    <!-- Công cụ -->
     <LinearLayout
         android:id="@+id/btnCongCu"
         android:layout_width="0dp"
@@ -67,17 +62,13 @@
         android:layout_weight="1"
         android:orientation="vertical"
         android:gravity="center"
-        android:clickable="true"
-        android:focusable="true"
         android:background="?attr/selectableItemBackgroundBorderless">
         <ImageView
-            android:id="@+id/imgCongCu"
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:src="@android:drawable/ic_menu_manage"
             app:tint="#666666"/>
         <TextView
-            android:id="@+id/tvCongCu"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Công cụ"
@@ -86,6 +77,7 @@
             android:layout_marginTop="4dp"/>
     </LinearLayout>
 
+    <!-- Liên hệ (Đã sửa từ Cài đặt) -->
     <LinearLayout
         android:id="@+id/btnCaiDat"
         android:layout_width="0dp"
@@ -93,20 +85,16 @@
         android:layout_weight="1"
         android:orientation="vertical"
         android:gravity="center"
-        android:clickable="true"
-        android:focusable="true"
         android:background="?attr/selectableItemBackgroundBorderless">
         <ImageView
-            android:id="@+id/imgCaiDat"
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:src="@android:drawable/ic_menu_preferences"
             app:tint="#666666"/>
         <TextView
-            android:id="@+id/tvCaiDat"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Cài đặt"
+            android:text="Liên hệ"
             android:textSize="11sp"
             android:textColor="#666666"
             android:layout_marginTop="4dp"/>

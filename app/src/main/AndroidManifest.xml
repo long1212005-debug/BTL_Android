@@ -15,11 +15,10 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Btl_Android">
         
-        <!-- Màn hình cào dữ liệu tự động trở thành màn hình chính -->
         <activity
             android:name=".controller.LayDuLieuWebViewActivity"
             android:exported="true"
-            android:label="Ứng dụng của Vduc và Hthinh">
+            android:label="Đăng nhập HaUI">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -37,6 +36,7 @@
         <activity android:name=".controller.ChiTietKyHocActivity" android:exported="false" />
         <activity android:name=".controller.CongCuActivity" android:exported="false" />
         <activity android:name=".controller.TinhDiemCanThiActivity" android:exported="false" />
+        <activity android:name=".controller.CaiDatActivity" android:exported="false" />
     </application>
 
 </manifest>

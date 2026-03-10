@@ -25,12 +25,13 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:layout_alignParentStart="true"
-                android:layout_centerVertical="true">
+                android:layout_centerVertical="true"
+                android:layout_toStartOf="@+id/ll_sync_container">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="QUẢN LÝ KỲ HỌC"
+                    android:text="TRANG CHỦ"
                     android:textSize="22sp"
                     android:textStyle="bold"
                     android:textColor="#FFFFFF"/>
@@ -38,22 +39,42 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Danh sách các kỳ học"
+                    android:text="Tổng quan kết quả học tập"
                     android:textSize="13sp"
                     android:textColor="#E3F2FD"
                     android:layout_marginTop="2dp"/>
             </LinearLayout>
 
-            <ImageButton
-                android:id="@+id/fabAddKyHoc"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
+            <LinearLayout
+                android:id="@+id/ll_sync_container"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:layout_alignParentEnd="true"
                 android:layout_centerVertical="true"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:src="@android:drawable/ic_input_add"
-                android:contentDescription="Thêm kỳ học mới"
-                app:tint="#FFFFFF" />
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?attr/selectableItemBackgroundBorderless">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Làm mới"
+                    android:textColor="#FFFFFF"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:layout_marginEnd="4dp"/>
+
+                <ImageButton
+                    android:id="@+id/btnReSyncData"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:background="@android:color/transparent"
+                    android:src="@android:drawable/ic_menu_rotate"
+                    android:contentDescription="Lấy lại dữ liệu từ Web"
+                    app:tint="#FFFFFF" />
+            </LinearLayout>
         </RelativeLayout>
 
         <LinearLayout
@@ -83,7 +104,7 @@
                     android:id="@+id/tvCpaHienTai"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="3.20"
+                    android:text="0.00"
                     android:textSize="36sp"
                     android:textStyle="bold"
                     android:textColor="#4CAF50"
@@ -124,7 +145,7 @@
                     android:id="@+id/tvTongTinChiTichLuy"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="60"
+                    android:text="0"
                     android:textSize="36sp"
                     android:textStyle="bold"
                     android:textColor="#2196F3"

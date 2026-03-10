@@ -90,12 +90,14 @@ public class LayDuLieuWebViewActivity extends AppCompatActivity {
     }
 
     private void handleAutoStep(String url) {
+        // GIẢM THỜI GIAN CHỜ XUỐNG 0.8 GIÂY
+        int delay = 800; 
         if (currentStep == 1 && url.contains("viewscorebysemester")) {
-            wv.postDelayed(this::scrapeSemesterData, 500);
+            wv.postDelayed(this::scrapeSemesterData, delay);
         } else if (currentStep == 2 && url.contains("examresult")) {
-            wv.postDelayed(this::scrapeExamData, 500);
+            wv.postDelayed(this::scrapeExamData, delay);
         } else if (currentStep == 3 && url.contains("studyresults")) {
-            wv.postDelayed(this::scrapeStudyData, 500);
+            wv.postDelayed(this::scrapeStudyData, delay);
         }
     }
 
