@@ -22,8 +22,10 @@ import com.example.btl_android.model.entity.MonHoc;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 public class LoTrinhHocTapActivity extends AppCompatActivity {
 
@@ -36,6 +38,7 @@ public class LoTrinhHocTapActivity extends AppCompatActivity {
 
     private MonHocDAO monHocDAO;
     private List<MonHoc> allMonHoc;
+    private List<MonHoc> bestAttemptsMonHoc; // Danh sách đã lọc điểm cao nhất
     private float currentGPA = 0;
     private int currentTinChi = 0;
     private final int TOTAL_CREDITS_REQUIRED = 140; // Mốc HaUI
@@ -72,7 +75,6 @@ public class LoTrinhHocTapActivity extends AppCompatActivity {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setDisplayShowHomeEnabled(true);
         }
-        // Sửa lỗi nút quay lại không hoạt động
         toolbar.setNavigationOnClickListener(v -> finish());
     }
 
@@ -84,13 +86,14 @@ public class LoTrinhHocTapActivity extends AppCompatActivity {
             return;
         }
 
+        // LỌC: Chỉ lấy lần học có điểm cao nhất của từng môn
+        bestAttemptsMonHoc = getBestAttempts(allMonHoc);
+
         float tongDiem = 0;
         currentTinChi = 0;
-        for (MonHoc mh : allMonHoc) {
-            if (!"Đang học".equals(mh.getTrangThai())) {
-                tongDiem += mh.getDiemTongKet4() * mh.getSoTinChi();
-                currentTinChi += mh.getSoTinChi();
-            }
+        for (MonHoc mh : bestAttemptsMonHoc) {
+            tongDiem += mh.getDiemTongKet4() * mh.getSoTinChi();
+            currentTinChi += mh.getSoTinChi();
         }
 
         if (currentTinChi > 0) {
@@ -100,6 +103,21 @@ public class LoTrinhHocTapActivity extends AppCompatActivity {
         }
     }
 
+    // Hàm lọc lấy danh sách môn học duy nhất với điểm cao nhất (Chuẩn quy tắc HaUI)
+    private List<MonHoc> getBestAttempts(List<MonHoc> list) {
+        Map<String, MonHoc> bestMap = new HashMap<>();
+        for (MonHoc mh : list) {
+            if ("Đang học".equals(mh.getTrangThai())) continue;
+            
+            String key = mh.getTenMon().trim().toLowerCase();
+            // Nếu môn chưa có trong map hoặc điểm lần này cao hơn lần trước thì cập nhật
+            if (!bestMap.containsKey(key) || mh.getDiemTongKet4() > bestMap.get(key).getDiemTongKet4()) {
+                bestMap.put(key, mh);
+            }
+        }
+        return new ArrayList<>(bestMap.values());
+    }
+
     private void setupClickListeners() {
         btnSyncData.setOnClickListener(v -> {
             Intent intent = new Intent(this, LayDuLieuWebViewActivity.class);
@@ -107,7 +125,7 @@ public class LoTrinhHocTapActivity extends AppCompatActivity {
         });
 
         btnAnalyze.setOnClickListener(v -> {
-            hideKeyboard(); // Ẩn bàn phím khi nhấn phân tích
+            hideKeyboard();
             analyzeLoTrinh();
         });
     }
@@ -137,7 +155,6 @@ public class LoTrinhHocTapActivity extends AppCompatActivity {
 
         layoutResult.setVisibility(View.VISIBLE);
 
-        // --- TÍNH TOÁN HỌC TIẾP ---
         int remainingCredits = TOTAL_CREDITS_REQUIRED - currentTinChi;
         if (remainingCredits > 0) {
             float totalPointsNeeded = (targetGPA * TOTAL_CREDITS_REQUIRED) - (currentGPA * currentTinChi);
@@ -160,47 +177,67 @@ public class LoTrinhHocTapActivity extends AppCompatActivity {
             tvHocTiepResult.setText("Bạn đã hoàn thành đủ " + TOTAL_CREDITS_REQUIRED + " tín chỉ.");
         }
 
-        // --- ĐỀ XUẤT CẢI THIỆN ---
         calculateImprovementNow(targetGPA);
     }
 
     private void calculateImprovementNow(float targetGPA) {
+        // Lấy các môn điểm thấp (< 2.5) từ danh sách kết quả tốt nhất
         List<MonHoc> lowScoreSubjects = new ArrayList<>();
-        for (MonHoc mh : allMonHoc) {
-            if (mh.getDiemTongKet4() < 2.5 && !"Đang học".equals(mh.getTrangThai())) {
+        for (MonHoc mh : bestAttemptsMonHoc) {
+            if (mh.getDiemTongKet4() < 2.5) {
                 lowScoreSubjects.add(mh);
             }
         }
         
+        // Sắp xếp ưu tiên:
+        // 1. Môn đã qua nhưng điểm thấp (D, D+, C) để cải thiện nhanh
+        // 2. Môn trượt (F) để học lại
+        // 3. Tín chỉ cao hơn xếp trước
         Collections.sort(lowScoreSubjects, (o1, o2) -> {
+            boolean isO1Passed = o1.getDiemTongKet4() > 0;
+            boolean isO2Passed = o2.getDiemTongKet4() > 0;
+            
+            if (isO1Passed != isO2Passed) {
+                return isO1Passed ? -1 : 1; // Ưu tiên môn đã qua lên trước
+            }
             if (o1.getSoTinChi() != o2.getSoTinChi()) {
-                return o2.getSoTinChi() - o1.getSoTinChi();
+                return o2.getSoTinChi() - o1.getSoTinChi(); // Ưu tiên tín chỉ nhiều
             }
             return Float.compare(o1.getDiemTongKet4(), o2.getDiemTongKet4());
         });
 
         float tempTotalPoints = currentGPA * currentTinChi;
-        int count = 0;
+        int improveCount = 0;
+        int retakeCount = 0;
         List<MonHoc> suggestList = new ArrayList<>();
 
         for (MonHoc mh : lowScoreSubjects) {
             if (tempTotalPoints / currentTinChi >= targetGPA) break;
+            
             tempTotalPoints += (4.0f - mh.getDiemTongKet4()) * mh.getSoTinChi();
-            count++;
+            if (mh.getDiemTongKet4() > 0) improveCount++;
+            else retakeCount++;
+            
             suggestList.add(mh);
         }
 
         float simulatedGPA = tempTotalPoints / currentTinChi;
         
+        StringBuilder sb = new StringBuilder();
         if (simulatedGPA >= targetGPA) {
-            tvSuggestImprove.setText(String.format(Locale.getDefault(), 
-                "Tại thời điểm hiện tại (%d tín), bạn cần học cải thiện ít nhất %d môn dưới đây lên điểm A để đạt GPA %.2f ngay lập tức:", 
-                currentTinChi, count, targetGPA));
+            sb.append(String.format(Locale.getDefault(), 
+                "Tại thời điểm hiện tại (%d tín), bạn cần xử lý ít nhất %d môn để đạt GPA %.2f:\n", 
+                currentTinChi, suggestList.size(), targetGPA));
         } else {
-            tvSuggestImprove.setText(String.format(Locale.getDefault(), 
-                "Kể cả học lại tất cả môn điểm thấp lên A, GPA hiện tại cũng chỉ đạt %.2f. Bạn cần học thêm môn mới để đạt mục tiêu %.2f:", 
+            sb.append(String.format(Locale.getDefault(), 
+                "Kể cả xử lý hết danh sách dưới đây, GPA cũng chỉ đạt %.2f. Bạn cần học thêm môn mới để đạt mục tiêu %.2f:\n", 
                 simulatedGPA, targetGPA));
         }
+        
+        if (improveCount > 0) sb.append(String.format("• Học cải thiện: %d môn (Điểm D, D+, C)\n", improveCount));
+        if (retakeCount > 0) sb.append(String.format("• Học lại: %d môn (Điểm F)\n", retakeCount));
+        
+        tvSuggestImprove.setText(sb.toString());
 
         MonHocAdapter adapter = new MonHocAdapter(this, suggestList);
         lvSuggestMonHoc.setAdapter(adapter);

@@ -118,7 +118,6 @@ public class MainActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
-        // Nút lấy lại dữ liệu từ web
         btnReSyncData.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, LayDuLieuWebViewActivity.class);
             startActivity(intent);
@@ -127,8 +126,7 @@ public class MainActivity extends AppCompatActivity {
         btnTrangChu.setOnClickListener(v -> refreshDisplay());
         btnThongKe.setOnClickListener(v -> startActivity(new Intent(this, ThongKe.class)));
         btnCongCu.setOnClickListener(v -> startActivity(new Intent(this, CongCuActivity.class)));
-        
-        // CHUYỂN MÀN HÌNH LIÊN HỆ: Đã sửa từ Toast sang startActivity
+
         btnCaiDat.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, CaiDatActivity.class);
             startActivity(intent);

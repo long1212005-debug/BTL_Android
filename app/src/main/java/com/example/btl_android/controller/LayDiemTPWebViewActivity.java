@@ -75,7 +75,6 @@ public class LayDiemTPWebViewActivity extends AppCompatActivity {
         });
 
         wvLaydiem.addJavascriptInterface(new WebDataInterface(), "AndroidBridge");
-        // Trang Kết quả học tập chi tiết
         wvLaydiem.loadUrl("https://sv.haui.edu.vn/student/result/studyresults");
     }
 
