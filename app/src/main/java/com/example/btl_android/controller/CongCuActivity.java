@@ -13,7 +13,7 @@ import com.example.btl_android.R;
 
 public class CongCuActivity extends AppCompatActivity {
 
-    private CardView btnTinhGPA, btnCaiThienDiem;
+    private CardView btnTinhGPA, btnCaiThienDiem, btnMoPhongGPA;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,6 +32,7 @@ public class CongCuActivity extends AppCompatActivity {
         // Ánh xạ Views
         btnTinhGPA = findViewById(R.id.btnTinhGPA);
         btnCaiThienDiem = findViewById(R.id.btnCaiThienDiem);
+        btnMoPhongGPA = findViewById(R.id.btnMoPhongGPA);
 
         // Thiết lập sự kiện click
         setupClickListeners();
@@ -47,6 +48,13 @@ public class CongCuActivity extends AppCompatActivity {
         btnCaiThienDiem.setOnClickListener(v -> {
             // Mở màn hình lộ trình học tập thông minh
             Intent intent = new Intent(CongCuActivity.this, LoTrinhHocTapActivity.class);
+            startActivity(intent);
+        });
+        btnMoPhongGPA.setOnClickListener(v -> {
+            Intent intent = new Intent(
+                    CongCuActivity.this,
+                    MoPhongGPAActivity.class
+            );
             startActivity(intent);
         });
     }

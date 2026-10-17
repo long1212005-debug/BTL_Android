@@ -78,26 +78,28 @@ public class MainActivity extends AppCompatActivity {
 
     private void refreshDisplay() {
         int svId = 1;
-        List<KyHoc> allKyHoc = kyHocDAO.getAllKyHoc(svId);
-        
-        int tongTinChi = 0;
-        float tongDiemTichLuy = 0;
 
-        for (KyHoc kh : allKyHoc) {
-            if (kh.getTongTinChiKy() > 0) {
-                tongTinChi += kh.getTongTinChiKy();
-                tongDiemTichLuy += (kh.getGpaKy() * kh.getTongTinChiKy());
-            }
-        }
+        monHocDAO.syncGlobalStats();
 
-        float cpa = (tongTinChi > 0) ? (tongDiemTichLuy / tongTinChi) : 0;
+        SinhVien sinhVien = sinhVienDAO.getSinhVien();
 
-        tvCpaHienTai.setText(String.format(Locale.getDefault(), "%.2f", cpa));
+        float cpa = sinhVien != null
+                ? sinhVien.getCpaHienTai()
+                : 0;
+
+        int tongTinChi = sinhVien != null
+                ? sinhVien.getTongTinChiTichLuy()
+                : 0;
+
+        tvCpaHienTai.setText(
+                String.format(Locale.getDefault(), "%.2f", cpa)
+        );
+
         tvTongTinChiTichLuy.setText(String.valueOf(tongTinChi));
 
         listDisplayKyHoc = kyHocDAO.getDisplayKyHoc(svId);
         tvSoKyHoc.setText(listDisplayKyHoc.size() + " kỳ");
-        
+
         adapter = new KyHocAdapter(this, listDisplayKyHoc);
         lvKyHoc.setAdapter(adapter);
 

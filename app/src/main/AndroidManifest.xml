@@ -37,6 +37,7 @@
         <activity android:name=".controller.CongCuActivity" android:exported="false" />
         <activity android:name=".controller.TinhDiemCanThiActivity" android:exported="false" />
         <activity android:name=".controller.CaiDatActivity" android:exported="false" />
+        <activity android:name=".controller.MoPhongGPAActivity" android:exported="false" />
     </application>
 
 </manifest>

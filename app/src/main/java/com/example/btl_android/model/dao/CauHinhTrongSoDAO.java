@@ -17,7 +17,7 @@ public class CauHinhTrongSoDAO {
 
     /**
      * Lấy cấu hình trọng số đầu tiên trong bảng.
-     * Thường ứng dụng chỉ có 1 cấu hình chung cho toàn bộ sinh viên.
+     * Ứng dụng chỉ có 1 cấu hình chung cho toàn bộ sinh viên.
      * @return Đối tượng CauHinhTrongSo hoặc null nếu chưa có dữ liệu.
      */
     public CauHinhTrongSo getCauHinh() {

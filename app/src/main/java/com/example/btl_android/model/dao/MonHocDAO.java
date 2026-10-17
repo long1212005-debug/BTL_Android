@@ -109,30 +109,43 @@ public class MonHocDAO {
      */
     public void syncGlobalStats() {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
-        
-        // Truy vấn con: Nhóm theo tên môn và lấy MAX điểm hệ 4
-        String subQuery = "SELECT ten_mon, MAX(diem_tong_ket_4) as max_diem4, MAX(so_tin_chi) as tin_chi " +
-                          "FROM MonHoc " +
-                          "WHERE diem_chu IS NOT NULL AND diem_chu != '' " +
-                          "GROUP BY ten_mon";
-                       
-        Cursor cursor = db.rawQuery("SELECT SUM(max_diem4 * tin_chi), SUM(tin_chi) FROM (" + subQuery + ")", null);
-        
+
+        String query =
+                "SELECT SUM(m.diem_tong_ket_4 * m.so_tin_chi), " +
+                        "SUM(m.so_tin_chi) " +
+                        "FROM MonHoc m " +
+                        "WHERE m.diem_chu IS NOT NULL " +
+                        "AND TRIM(m.diem_chu) != '' " +
+                        "AND NOT EXISTS (" +
+                        "SELECT 1 FROM MonHoc m2 " +
+                        "WHERE LOWER(TRIM(m2.ten_mon)) = LOWER(TRIM(m.ten_mon)) " +
+                        "AND m2.diem_chu IS NOT NULL " +
+                        "AND TRIM(m2.diem_chu) != '' " +
+                        "AND (" +
+                        "m2.diem_tong_ket_4 > m.diem_tong_ket_4 " +
+                        "OR (m2.diem_tong_ket_4 = m.diem_tong_ket_4 " +
+                        "AND m2.id < m.id)" +
+                        ")" +
+                        ")";
+
         float tongDiemTichLuy = 0;
         int tongTinChi = 0;
-        
-        if (cursor.moveToFirst() && cursor.getInt(1) > 0) {
-            tongDiemTichLuy = cursor.getFloat(0);
-            tongTinChi = cursor.getInt(1);
-        }
-        cursor.close();
 
-        float cpa = tongTinChi > 0 ? tongDiemTichLuy / tongTinChi : 0;
+        try (Cursor cursor = db.rawQuery(query, null)) {
+            if (cursor.moveToFirst() && !cursor.isNull(1)) {
+                tongDiemTichLuy = cursor.getFloat(0);
+                tongTinChi = cursor.getInt(1);
+            }
+        }
+
+        float cpa = tongTinChi > 0
+                ? tongDiemTichLuy / tongTinChi
+                : 0;
 
         ContentValues values = new ContentValues();
         values.put("cpa_hien_tai", cpa);
         values.put("tong_tin_chi_tich_luy", tongTinChi);
-        
+
         db.update("SinhVien", values, "id = 1", null);
     }
 }
